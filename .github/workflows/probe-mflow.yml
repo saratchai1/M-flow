@@ -22,3 +22,12 @@ jobs:
       - run: pip install playwright==1.62.0
       - run: playwright install --with-deps chromium
       - run: python scripts/probe_mflow.py
+      - name: Upload M-Flow diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mflow-spa-probe-${{ github.run_id }}
+          path: |
+            mflow-spa.png
+          if-no-files-found: ignore
+          retention-days: 3
