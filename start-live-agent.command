@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 printf '\033]0;M-Flow LIVE Local Agent\007'
 echo "=================================================="
 echo " M-Flow LIVE Local Agent (macOS)"
-echo " Real checks run from THIS Mac/network."
+echo " Current M-Flow API2 checker — no simulated result"
 echo "=================================================="
 echo
 
@@ -17,21 +17,18 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 if [ ! -x ".venv/bin/python" ]; then
-  echo "[1/4] Creating local environment..."
+  echo "[1/3] Creating local environment..."
   python3 -m venv .venv
 fi
 
 source .venv/bin/activate
 
-echo "[2/4] Installing/updating M-Flow agent..."
+echo "[2/3] Installing/updating M-Flow agent..."
 python -m pip install --upgrade pip >/dev/null
-pip install -e .
+python -m pip install -e .
 
-echo "[3/4] Installing browser engine if needed..."
-python -m playwright install chromium
-
-echo "[4/4] Starting LIVE agent..."
-export MFLOW_URL="https://mflowthai.com/mflow/unuserpayment"
+echo "[3/3] Starting LIVE API2 agent..."
+export MFLOW_URL="https://mflowthai.com/mflowspf/"
 export MFLOW_HEADLESS="true"
 open "https://mflow-admin-demo.vercel.app"
 
