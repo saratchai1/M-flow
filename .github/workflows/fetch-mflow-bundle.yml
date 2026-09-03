@@ -14,14 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
-      - name: Download current public M-Flow SPA bundle
+      - name: Download current public M-Flow SPA configuration
         run: |
           mkdir -p mflow-bundle
-          curl --connect-timeout 15 --max-time 90 -LfsS https://mflowthai.com/mflowspf/main.dart.js -o mflow-bundle/main.dart.js
-          curl --connect-timeout 15 --max-time 30 -LfsS https://mflowthai.com/mflowspf/assets/AssetManifest.bin.json -o mflow-bundle/AssetManifest.bin.json || true
+          curl --connect-timeout 15 --max-time 60 -LfsS https://mflowthai.com/mflowspf/assets/.env -o mflow-bundle/mflow.env
+          curl --connect-timeout 15 --max-time 60 -LfsS https://mflowthai.com/mflowspf/assets/AssetManifest.bin.json -o mflow-bundle/AssetManifest.bin.json || true
           wc -c mflow-bundle/*
+          echo '--- public env keys ---'
+          sed -E 's/(=.*)/=<redacted>/' mflow-bundle/mflow.env
       - uses: actions/upload-artifact@v4
         with:
-          name: mflow-bundle-${{ github.run_id }}
+          name: mflow-config-${{ github.run_id }}
           path: mflow-bundle/
           retention-days: 3
