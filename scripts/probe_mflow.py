@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 from urllib.parse import urljoin, urlparse
+from urllib.request import Request, urlopen
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
@@ -9,11 +11,16 @@ TARGETS = (
     "https://mflowthai.com/",
     "https://mflowthai.com/mflowspf/",
 )
+BUNDLE = "https://mflowthai.com/mflowspf/main.dart.js"
 
 
 def safe_url(url: str) -> str:
     p = urlparse(url)
     return f"{p.scheme}://{p.netloc}{p.path}"
+
+
+def compact(value: str, limit: int = 340) -> str:
+    return " ".join(value.replace("\x00", " ").split())[:limit]
 
 
 with sync_playwright() as p:
@@ -87,15 +94,50 @@ with sync_playwright() as p:
                     "aria": el.get_attribute("aria-label"),
                 })
 
-            print("SCRIPTS")
-            scripts = page.locator("script[src]")
-            for i in range(min(scripts.count(), 100)):
-                src = scripts.nth(i).get_attribute("src")
-                if src:
-                    print(urljoin(page.url, src))
+            page.screenshot(path="mflow-spa.png", full_page=True)
         except Exception as exc:
             print("PROBE_ERROR", type(exc).__name__, str(exc))
         finally:
             page.close()
 
     browser.close()
+
+print("\n=== FLUTTER BUNDLE ANALYSIS ===")
+request = Request(BUNDLE, headers={"User-Agent": "Mozilla/5.0"})
+with urlopen(request, timeout=90) as response:
+    raw = response.read()
+text = raw.decode("utf-8", errors="ignore")
+print("BUNDLE_BYTES", len(raw))
+
+urls = sorted(set(re.findall(r"https?://[^\s\"'<>\\]+", text)))
+print("ABSOLUTE_URLS")
+for value in urls[:300]:
+    print(compact(value, 500))
+
+path_pattern = re.compile(r"[\"'](/[^\"'\\\s]{2,180})[\"']")
+interesting_paths = sorted({
+    match.group(1)
+    for match in path_pattern.finditer(text)
+    if any(token in match.group(1).lower() for token in (
+        "api", "payment", "invoice", "bill", "vehicle", "license", "plate",
+        "province", "toll", "transaction", "guest", "anonymous", "member",
+        "unpaid", "search", "fee", "mflow",
+    ))
+})
+print("INTERESTING_PATHS")
+for value in interesting_paths[:500]:
+    print(compact(value, 500))
+
+keywords = (
+    "unuserpayment", "checkunbilled", "licensePlate", "license_plate", "plateNumber",
+    "vehicleRegistration", "province", "outstanding", "unpaid", "invoice", "payment",
+    "transaction", "anonymous", "guest", "nonmember", "non-member", "ทะเบียน",
+    "จังหวัด", "ชำระ", "ยอดค้าง",
+)
+for keyword in keywords:
+    positions = [m.start() for m in re.finditer(re.escape(keyword), text, flags=re.IGNORECASE)]
+    print("KEYWORD", keyword, "COUNT", len(positions))
+    for pos in positions[:8]:
+        start = max(0, pos - 220)
+        end = min(len(text), pos + len(keyword) + 260)
+        print("CONTEXT", compact(text[start:end], 700))
