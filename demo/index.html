@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b5cff">
+<title>M-Flow Fleet Admin — Demo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,"Noto Sans Thai",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f7fb;color:#152033}.wrap{max-width:1180px;margin:auto;padding:28px 18px 72px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:13px}.logo{width:46px;height:46px;border-radius:14px;background:#0b5cff;color:white;display:grid;place-items:center;font-weight:800;font-size:20px;box-shadow:0 9px 28px rgba(11,92,255,.22)}h1{font-size:24px;margin:0}.sub{color:#6c788c;font-size:13px;margin-top:3px}.demo{display:inline-flex;align-items:center;gap:7px;background:#fff4d6;color:#875900;border:1px solid #f1d483;border-radius:999px;padding:8px 12px;font-weight:700;font-size:12px}.demo:before{content:"";width:8px;height:8px;border-radius:50%;background:#e49a00}.actions{display:flex;gap:10px;align-items:center}.btn{border:0;border-radius:12px;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer}.btn.primary{background:#0b5cff;color:white;box-shadow:0 8px 22px rgba(11,92,255,.2)}.btn.secondary{background:white;border:1px solid #dce3ef;color:#34415a}.btn:disabled{opacity:.55;cursor:not-allowed}.notice{background:#eaf2ff;border:1px solid #c9dcff;color:#234a87;padding:13px 15px;border-radius:13px;font-size:13px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.card{background:white;border:1px solid #e3e8f1;border-radius:16px;padding:17px;box-shadow:0 3px 14px rgba(18,34,61,.04)}.metric{font-size:31px;font-weight:800;line-height:1;margin:9px 0 6px}.label{font-size:13px;color:#68758a}.card.urgent .metric{color:#c82c2c}.card.unpaid .metric{color:#bd7300}.card.error .metric{color:#8b48b0}.card.clear .metric{color:#16834e}.toolbar{background:white;border:1px solid #e3e8f1;border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:12px;box-shadow:0 3px 14px rgba(18,34,61,.04)}.search{flex:1;min-width:170px;border:1px solid #dce3ef;border-radius:11px;padding:10px 12px;font:inherit;outline:none}.search:focus{border-color:#8cb4ff;box-shadow:0 0 0 3px rgba(11,92,255,.08)}.filter{border:1px solid #dce3ef;background:white;border-radius:11px;padding:10px 12px;font:inherit}.panel{background:white;border:1px solid #e3e8f1;border-radius:16px;overflow:hidden;box-shadow:0 3px 14px rgba(18,34,61,.04)}.panel-head{padding:15px 17px;border-bottom:1px solid #edf0f5;display:flex;justify-content:space-between;gap:10px;align-items:center}.panel-head h2{font-size:16px;margin:0}.updated{font-size:12px;color:#758196}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:820px}th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#7a8699;background:#fafbfd;text-align:left;padding:11px 14px;border-bottom:1px solid #e9edf4}td{padding:13px 14px;border-bottom:1px solid #edf0f5;font-size:13px;vertical-align:middle}tr:last-child td{border-bottom:0}.plate{font-size:15px;font-weight:800}.driver{color:#7b8798;font-size:12px;margin-top:3px}.status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;white-space:nowrap}.dot{width:7px;height:7px;border-radius:50%}.s-clear{background:#eaf8f1;color:#137347}.s-clear .dot{background:#1b9a60}.s-unpaid{background:#fff5df;color:#9a5d00}.s-unpaid .dot{background:#e99918}.s-urgent{background:#ffeded;color:#ac2424}.s-urgent .dot{background:#da3535}.s-error{background:#f5ecfa;color:#7b3f9b}.s-error .dot{background:#9959b9}.amount{font-weight:800}.deadline{font-weight:700}.deadline.urgent{color:#bf2727}.muted{color:#8a95a6}.pay{display:inline-block;text-decoration:none;color:#0b5cff;font-weight:800;font-size:12px}.mobile-list{display:none}.toast{position:fixed;right:18px;bottom:18px;background:#172033;color:white;border-radius:13px;padding:12px 15px;box-shadow:0 12px 36px rgba(0,0,0,.2);font-size:13px;transform:translateY(90px);opacity:0;transition:.25s;z-index:5}.toast.show{transform:none;opacity:1}.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.45);border-top-color:white;border-radius:50%;display:inline-block;vertical-align:-3px;margin-right:7px;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start}.actions{flex-direction:column;align-items:stretch}.toolbar{flex-wrap:wrap}.table-wrap{display:none}.mobile-list{display:block}.vehicle-card{padding:15px;border-bottom:1px solid #edf0f5}.vehicle-card:last-child{border:0}.vc-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.vc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}.vc-item span{display:block;color:#8a95a6;font-size:10px;text-transform:uppercase;margin-bottom:3px}.vc-item strong{font-size:13px}.vc-action{margin-top:12px;padding-top:11px;border-top:1px dashed #e0e5ee}.pay{font-size:13px}.demo{align-self:flex-start}}
+@media(max-width:520px){.wrap{padding:18px 12px 55px}.top{display:block}.actions{margin-top:14px;flex-direction:row}.btn{flex:1;padding:10px 11px}.grid{gap:8px}.card{padding:14px}.metric{font-size:27px}.toolbar{display:grid;grid-template-columns:1fr 120px}.search{min-width:0}.panel-head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><div class="logo">M</div><div><h1>M-Flow Fleet Admin</h1><div class="sub">ดูยอดค้างและรถที่ต้องจัดการในหน้าเดียว</div></div></div>
+    <div class="actions"><span class="demo">DEMO DATA</span><button id="checkBtn" class="btn primary">ตรวจสอบตอนนี้</button></div>
+  </div>
+  <div class="notice"><strong>เวอร์ชันทดลองสำหรับแอดมิน</strong> — ทะเบียนและยอดทั้งหมดเป็นข้อมูลจำลอง ปุ่มต่าง ๆ ไม่เชื่อมต่อ M-Flow และไม่มีการชำระเงินจริง</div>
+  <div class="grid">
+    <div class="card urgent"><div class="label">ต้องจัดการด่วน</div><div class="metric" id="mUrgent">0</div><div class="label">เหลือน้อยกว่า 12 ชม.</div></div>
+    <div class="card unpaid"><div class="label">มียอดค้าง</div><div class="metric" id="mUnpaid">0</div><div class="label">ควรตรวจและชำระ</div></div>
+    <div class="card error"><div class="label">เช็กไม่สำเร็จ</div><div class="metric" id="mError">0</div><div class="label">ต้องตรวจด้วยตนเอง</div></div>
+    <div class="card clear"><div class="label">ปกติ</div><div class="metric" id="mClear">0</div><div class="label">ไม่มีรายการค้าง</div></div>
+  </div>
+  <div class="toolbar"><input id="search" class="search" placeholder="ค้นหาทะเบียน หรือชื่อคนขับ"><select id="filter" class="filter"><option value="all">รถทั้งหมด</option><option value="action">เฉพาะที่ต้องจัดการ</option><option value="urgent">ด่วน</option><option value="unpaid">ค้างจ่าย</option><option value="error">เช็กไม่สำเร็จ</option><option value="clear">ปกติ</option></select></div>
+  <div class="panel">
+    <div class="panel-head"><h2>รถในความดูแล <span id="count"></span></h2><div class="updated" id="updated"></div></div>
+    <div class="table-wrap"><table><thead><tr><th>ทะเบียน / ผู้ใช้รถ</th><th>สถานะ</th><th>ยอด</th><th>รายการล่าสุด</th><th>Safety deadline</th><th>การดำเนินการ</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div id="mobile" class="mobile-list"></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const baseVehicles=[
+ {plate:'1กก1234',driver:'Test Driver 01',status:'urgent',amount:30,date:'03/09/2026',hours:6},
+ {plate:'2ขข5678',driver:'Test Driver 02',status:'clear',amount:0,date:'-',hours:null},
+ {plate:'3คค9012',driver:'Test Driver 03',status:'unpaid',amount:30,date:'02/09/2026',hours:31},
+ {plate:'4งง3456',driver:'Test Driver 04',status:'unpaid',amount:30,date:'02/09/2026',hours:21},
+ {plate:'5จจ7890',driver:'Test Driver 05',status:'clear',amount:0,date:'-',hours:null},
+ {plate:'6ฉฉ2468',driver:'Test Driver 06',status:'error',amount:null,date:'-',hours:null},
+ {plate:'7ชช1357',driver:'Test Driver 07',status:'unpaid',amount:30,date:'02/09/2026',hours:40},
+ {plate:'8ซซ8642',driver:'Test Driver 08',status:'clear',amount:0,date:'-',hours:null},
+ {plate:'9ญญ9753',driver:'Test Driver 09',status:'clear',amount:0,date:'-',hours:null},
+ {plate:'1ฎฎ4826',driver:'Test Driver 10',status:'clear',amount:0,date:'-',hours:null}
+];
+let vehicles=JSON.parse(localStorage.getItem('mflow-demo-cars')||'null')||baseVehicles;
+let lastUpdated=localStorage.getItem('mflow-demo-updated')||new Date().toISOString();
+const labels={urgent:'ด่วน',unpaid:'ค้างจ่าย',error:'เช็กไม่สำเร็จ',clear:'ปกติ'};
+function statusHTML(s){return `<span class="status s-${s}"><i class="dot"></i>${labels[s]}</span>`}
+function deadline(v){if(v.hours==null)return '-'; const d=new Date(Date.now()+v.hours*3600000);return d.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' น.'}
+function action(v){if(v.status==='clear')return '<span class="muted">ไม่ต้องทำอะไร</span>';if(v.status==='error')return '<a class="pay" href="#" onclick="manual(event)">ตรวจด้วยตนเอง →</a>';return '<a class="pay" href="#" onclick="mockPay(event,this)">เปิดรายการชำระ →</a>'}
+function filtered(){const q=document.getElementById('search').value.trim().toLowerCase();const f=document.getElementById('filter').value;return vehicles.filter(v=>{const hit=!q||(v.plate+v.driver).toLowerCase().includes(q);const ok=f==='all'||v.status===f||(f==='action'&&v.status!=='clear');return hit&&ok})}
+function render(){
+ const c={urgent:0,unpaid:0,error:0,clear:0};vehicles.forEach(v=>c[v.status]++);document.getElementById('mUrgent').textContent=c.urgent;document.getElementById('mUnpaid').textContent=c.unpaid+c.urgent;document.getElementById('mError').textContent=c.error;document.getElementById('mClear').textContent=c.clear;
+ const list=filtered();document.getElementById('count').textContent=`(${list.length}/${vehicles.length})`;document.getElementById('updated').textContent='ตรวจล่าสุด '+new Date(lastUpdated).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+ document.getElementById('rows').innerHTML=list.map(v=>`<tr><td><div class="plate">${v.plate}</div><div class="driver">${v.driver} · กรุงเทพมหานคร</div></td><td>${statusHTML(v.status)}</td><td class="amount">${v.amount==null?'-':v.amount?`฿${v.amount.toFixed(2)}`:'-'}</td><td>${v.date}</td><td class="deadline ${v.status==='urgent'?'urgent':''}">${deadline(v)}</td><td>${action(v)}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">ไม่พบรถตามตัวกรอง</td></tr>';
+ document.getElementById('mobile').innerHTML=list.map(v=>`<div class="vehicle-card"><div class="vc-top"><div><div class="plate">${v.plate}</div><div class="driver">${v.driver}</div></div>${statusHTML(v.status)}</div><div class="vc-grid"><div class="vc-item"><span>ยอด</span><strong>${v.amount?`฿${v.amount.toFixed(2)}`:'-'}</strong></div><div class="vc-item"><span>รายการล่าสุด</span><strong>${v.date}</strong></div><div class="vc-item"><span>จังหวัด</span><strong>กรุงเทพมหานคร</strong></div><div class="vc-item"><span>Safety deadline</span><strong class="${v.status==='urgent'?'deadline urgent':''}">${deadline(v)}</strong></div></div><div class="vc-action">${action(v)}</div></div>`).join('')||'<div class="vehicle-card muted">ไม่พบรถตามตัวกรอง</div>';
+}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+function manual(e){e.preventDefault();toast('Demo: ในระบบจริงจะเปิดหน้า M-Flow สำหรับตรวจด้วยตนเอง')}
+function mockPay(e,a){e.preventDefault();toast('Demo: หน้านี้ไม่ชำระเงินจริง ในระบบจริงจะเปิดรายการ/QR ชำระ')}
+function runCheck(){const b=document.getElementById('checkBtn');b.disabled=true;b.innerHTML='<span class="spinner"></span>กำลังตรวจ 10 คัน';setTimeout(()=>{vehicles=baseVehicles.map((v,i)=>({...v,hours:v.hours==null?null:Math.max(3,v.hours-(i%3))}));lastUpdated=new Date().toISOString();localStorage.setItem('mflow-demo-cars',JSON.stringify(vehicles));localStorage.setItem('mflow-demo-updated',lastUpdated);b.disabled=false;b.textContent='ตรวจสอบตอนนี้';render();toast('ตรวจจำลองเสร็จแล้ว: 10/10 คัน')},1600)}
+document.getElementById('search').addEventListener('input',render);document.getElementById('filter').addEventListener('change',render);document.getElementById('checkBtn').addEventListener('click',runCheck);render();
+</script>
+</body></html>
