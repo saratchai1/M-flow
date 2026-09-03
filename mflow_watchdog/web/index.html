@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>M-Flow Fleet Admin</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">FLEET PAYMENT WATCHDOG</div>
+        <h1>M-Flow รถบริษัท</h1>
+        <p class="subtitle">ดูว่ารถคันไหนต้องจัดการ โดยไม่ต้องเปิด GitHub หรือเช็กทีละทะเบียน</p>
+      </div>
+      <div class="top-actions">
+        <span id="modeBadge" class="mode-badge">กำลังโหลด...</span>
+        <button id="checkButton" class="primary-button" type="button">ตรวจสอบตอนนี้</button>
+      </div>
+    </header>
+
+    <section id="systemBanner" class="system-banner" aria-live="polite">
+      <span class="pulse-dot"></span>
+      <span id="systemText">กำลังโหลดสถานะระบบ...</span>
+    </section>
+
+    <main>
+      <section class="summary-grid" aria-label="สรุปสถานะรถ">
+        <article class="summary-card card-danger">
+          <span class="card-label">ต้องจัดการด่วน</span>
+          <strong id="urgentCount">-</strong>
+          <small>ใกล้หรือเกิน safety deadline</small>
+        </article>
+        <article class="summary-card card-warning">
+          <span class="card-label">มียอดค้าง</span>
+          <strong id="unpaidCount">-</strong>
+          <small>พบรายการที่ยังต้องติดตาม</small>
+        </article>
+        <article class="summary-card card-attention">
+          <span class="card-label">ระบบเช็กไม่ได้</span>
+          <strong id="attentionCount">-</strong>
+          <small>ต้องเปิดตรวจด้วยคน</small>
+        </article>
+        <article class="summary-card card-success">
+          <span class="card-label">ปกติ</span>
+          <strong id="clearCount">-</strong>
+          <small>ไม่พบรายการค้างล่าสุด</small>
+        </article>
+      </section>
+
+      <section class="panel fleet-panel">
+        <div class="panel-header">
+          <div>
+            <h2>รถทั้งหมด <span id="totalVehicles" class="muted-count"></span></h2>
+            <p id="lastUpdated" class="muted">ยังไม่มีข้อมูลการตรวจ</p>
+          </div>
+          <div class="toolbar">
+            <label class="search-box">
+              <span>ค้นหา</span>
+              <input id="searchInput" type="search" placeholder="ทะเบียน / คนขับ / จังหวัด">
+            </label>
+          </div>
+        </div>
+
+        <div class="filters" role="group" aria-label="กรองสถานะ">
+          <button class="filter-chip active" data-filter="ALL">ทั้งหมด</button>
+          <button class="filter-chip" data-filter="ACTION">ต้องจัดการ</button>
+          <button class="filter-chip" data-filter="CLEAR">ปกติ</button>
+          <button class="filter-chip" data-filter="NOT_CHECKED">ยังไม่ตรวจ</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ทะเบียน</th>
+                <th>ผู้ใช้รถ</th>
+                <th>สถานะ</th>
+                <th>ยอดค้าง</th>
+                <th>ครบกำหนดภายใน</th>
+                <th>ตรวจล่าสุด</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="fleetRows">
+              <tr><td colspan="7" class="empty-state">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="mobileFleet" class="mobile-fleet"></div>
+      </section>
+
+      <section id="demoPanel" class="panel demo-panel hidden">
+        <div class="panel-header compact">
+          <div>
+            <h2>ตัวอย่างข้อความแจ้งเตือน</h2>
+            <p class="muted">ใน Demo จะไม่ส่ง LINE / Telegram จริง</p>
+          </div>
+        </div>
+        <div id="notificationList" class="notification-list"></div>
+      </section>
+
+      <section class="help-strip">
+        <div><strong>สีแดง</strong><span>จัดการก่อน</span></div>
+        <div><strong>สีเหลือง</strong><span>มีรายการค้าง</span></div>
+        <div><strong>สีม่วง</strong><span>ระบบเช็กไม่สำเร็จ</span></div>
+        <div><strong>สีเขียว</strong><span>ปกติ</span></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>
