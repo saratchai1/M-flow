@@ -1,0 +1,31 @@
+name: Probe M-Flow Flutter semantics
+
+on:
+  push:
+    paths:
+      - "scripts/probe_flutter_semantics.py"
+      - ".github/workflows/probe-flutter-semantics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright==1.62.0
+      - run: playwright install --with-deps chromium
+      - run: python scripts/probe_flutter_semantics.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mflow-flutter-screenshots
+          path: mflow-flutter-*.png
+          if-no-files-found: ignore
+          retention-days: 3
