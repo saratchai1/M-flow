@@ -1,0 +1,22 @@
+name: Extract M-Flow API paths
+
+on:
+  push:
+    paths:
+      - "scripts/extract_mflow_paths.py"
+      - ".github/workflows/extract-mflow-paths.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/extract_mflow_paths.py
