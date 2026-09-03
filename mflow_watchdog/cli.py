@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mflow-watchdog")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("check", help="Check all configured vehicles once")
-    dashboard = sub.add_parser("dashboard", help="Serve local read-only dashboard")
+    dashboard = sub.add_parser("dashboard", help="Serve the admin-friendly web application")
     dashboard.add_argument("--host", default="127.0.0.1")
     dashboard.add_argument("--port", type=int, default=8080)
     return parser
@@ -40,12 +40,13 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     args = build_parser().parse_args(argv)
     settings = Settings.from_env()
+
+    if args.command == "dashboard":
+        serve(settings, host=args.host, port=args.port)
+        return 0
+
     store = Store(settings.database_path)
     try:
-        if args.command == "dashboard":
-            serve(store, host=args.host, port=args.port)
-            return 0
-
         mock_mode = os.getenv("MFLOW_MOCK_MODE", "").strip().lower()
         if mock_mode:
             checker = MockMFlowChecker(mock_mode)
