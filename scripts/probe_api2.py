@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import random
 from datetime import datetime
@@ -82,25 +83,14 @@ def redact(value):
         return out
     if isinstance(value, list):
         return [redact(item) for item in value[:10]]
-    if isinstance(value, str) and len(value) > 500:
-        return value[:500] + "…"
+    if isinstance(value, str) and len(value) > 600:
+        return value[:600] + "…"
     return value
 
 
-def find_token(payload) -> str | None:
-    if isinstance(payload, dict):
-        for key, value in payload.items():
-            if key.lower() == "accesstoken" and isinstance(value, str) and value:
-                return value
-            found = find_token(value)
-            if found:
-                return found
-    elif isinstance(payload, list):
-        for item in payload:
-            found = find_token(item)
-            if found:
-                return found
-    return None
+def print_result(label: str, status: int, payload) -> None:
+    print(label + "_STATUS", status)
+    print(label + "_RESPONSE", json.dumps(redact(payload), ensure_ascii=False)[:7000])
 
 
 def find_province_code(payload, names=("กรุงเทพมหานคร", "กรุงเทพ", "Bangkok")) -> str | None:
@@ -131,36 +121,22 @@ def main() -> int:
         return 2
 
     base_headers = common_headers(env["API_KEY"])
-    auth_headers = {
-        **base_headers,
-        "Authorization": "Basic [GUEST]",
-        "LoginType": "GUEST",
-        "AccountType": "CUSTOMER",
-        "X-Device-Id": DEVICE_ID,
-        "X-Device-Name": DEVICE_NAME,
-    }
-    # The current Flutter client constructs its auth client with
-    # CUSTOMER_SERVICE_BASE_URL, not AUTH_SERVICE_BASE_URL.
-    auth_url = env["CUSTOMER_SERVICE_BASE_URL"].rstrip("/") + "/v1/auth/sign-in/app"
-    status, _, auth = request_json("POST", auth_url, auth_headers)
-    print("AUTH_STATUS", status)
-    print("AUTH_RESPONSE", json.dumps(redact(auth), ensure_ascii=False)[:4000])
-    access_token = find_token(auth)
-    if not access_token:
-        print("AUTH_FAILED_NO_TOKEN")
-        return 3
-
-    bearer_headers = {**common_headers(env["API_KEY"]), "Authorization": "Bearer " + access_token}
     master_url = env["MASTER_SERVICE_BASE_URL"].rstrip("/") + "/v1/masterDropdown/dropdownProvince"
+
     province_code = None
-    for special in ("N", "false", "0", ""):
-        url = master_url + ("?" + urlencode({"specialRegionFlag": special}) if special else "")
-        status, _, payload = request_json("GET", url, {**bearer_headers, "Language": "TH"})
-        print("PROVINCE_STATUS", special or "<omitted>", status)
-        print("PROVINCE_RESPONSE_HEAD", json.dumps(redact(payload), ensure_ascii=False)[:2500])
-        code = find_province_code(payload)
-        if status < 400 and code:
-            province_code = code
+    for auth_label, authorization in (("NOAUTH", None), ("RAWGUEST", "Basic [GUEST]")):
+        headers = dict(base_headers)
+        if authorization:
+            headers["Authorization"] = authorization
+        for special in ("N", "false", "0", ""):
+            url = master_url + ("?" + urlencode({"specialRegionFlag": special}) if special else "")
+            status, _, payload = request_json("GET", url, headers)
+            print_result(f"PROVINCE_{auth_label}_{special or 'OMITTED'}", status, payload)
+            code = find_province_code(payload)
+            if status < 400 and code:
+                province_code = code
+                break
+        if province_code:
             break
 
     if not province_code:
@@ -180,11 +156,41 @@ def main() -> int:
         "endDate": None,
         "selectType": "1",
     }
-    status, _, transactions = request_json("POST", billing_url, bearer_headers, body)
-    print("TRANSACTION_STATUS", status)
-    print("TRANSACTION_RESPONSE", json.dumps(redact(transactions), ensure_ascii=False)[:6000])
-    print("TRANSACTION_REQUEST_KEYS", sorted(body.keys()))
-    return 0 if status < 500 else 5
+
+    auth_variants = (
+        ("NOAUTH", None),
+        ("RAWGUEST", "Basic [GUEST]"),
+        ("B64BRACKETGUEST", "Basic " + base64.b64encode(b"[GUEST]").decode()),
+        ("B64GUEST", "Basic " + base64.b64encode(b"GUEST").decode()),
+    )
+    best_status = 999
+    for label, authorization in auth_variants:
+        headers = common_headers(env["API_KEY"])
+        if authorization:
+            headers["Authorization"] = authorization
+        status, _, payload = request_json("POST", billing_url, headers, body)
+        print_result("TRANSACTION_" + label, status, payload)
+        best_status = min(best_status, status)
+        if status < 400:
+            print("WORKING_AUTH_VARIANT", label)
+            return 0
+
+    # Retain a focused auth probe for diagnosis, but it is no longer assumed to
+    # be required by the nonmember endpoint.
+    auth_url = env["CUSTOMER_SERVICE_BASE_URL"].rstrip("/") + "/v1/auth/sign-in/app"
+    for label, authorization in auth_variants[1:]:
+        auth_headers = {
+            **common_headers(env["API_KEY"]),
+            "Authorization": authorization,
+            "LoginType": "GUEST",
+            "AccountType": "CUSTOMER",
+            "X-Device-Id": DEVICE_ID,
+            "X-Device-Name": DEVICE_NAME,
+        }
+        status, _, payload = request_json("POST", auth_url, auth_headers)
+        print_result("AUTH_" + label, status, payload)
+
+    return 5 if best_status >= 500 else 6
 
 
 if __name__ == "__main__":
