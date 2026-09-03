@@ -1,8 +1,62 @@
 [
   {
-    "plate_number": "กก1234",
+    "plate_number": "1กก1234",
     "province": "กรุงเทพมหานคร",
-    "driver_name": "Example Driver",
+    "driver_name": "Test Driver 01",
+    "active": true
+  },
+  {
+    "plate_number": "2ขข5678",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 02",
+    "active": true
+  },
+  {
+    "plate_number": "3คค9012",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 03",
+    "active": true
+  },
+  {
+    "plate_number": "4งง3456",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 04",
+    "active": true
+  },
+  {
+    "plate_number": "5จจ7890",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 05",
+    "active": true
+  },
+  {
+    "plate_number": "6ฉฉ2468",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 06",
+    "active": true
+  },
+  {
+    "plate_number": "7ชช1357",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 07",
+    "active": true
+  },
+  {
+    "plate_number": "8ซซ8642",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 08",
+    "active": true
+  },
+  {
+    "plate_number": "9ญญ9753",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 09",
+    "active": true
+  },
+  {
+    "plate_number": "1ฎฎ4826",
+    "province": "กรุงเทพมหานคร",
+    "driver_name": "Test Driver 10",
     "active": true
   }
 ]
