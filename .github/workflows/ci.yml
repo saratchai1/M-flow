@@ -19,3 +19,13 @@ jobs:
           cache: pip
       - run: pip install -e '.[dev]'
       - run: pytest -q
+      - name: End-to-end smoke test (safe mock mode)
+        env:
+          MFLOW_MOCK_MODE: success
+          VEHICLES_FILE: vehicles.example.json
+          DATABASE_PATH: /tmp/mflow-smoke.db
+          ARTIFACT_DIR: /tmp/mflow-artifacts
+        run: |
+          python -m mflow_watchdog.cli check | tee /tmp/mflow-smoke-output.txt
+          grep -q '"CHECK_FAILED": 0' /tmp/mflow-smoke-output.txt
+          grep -q '"REVIEW_REQUIRED": 0' /tmp/mflow-smoke-output.txt
