@@ -13,7 +13,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,7 +27,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mflow-spa-probe-${{ github.run_id }}
-          path: |
-            mflow-spa.png
-          if-no-files-found: ignore
+          path: mflow-diagnostics/
+          if-no-files-found: warn
           retention-days: 3
