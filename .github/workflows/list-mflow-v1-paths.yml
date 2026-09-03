@@ -1,0 +1,22 @@
+name: List M-Flow v1 paths
+
+on:
+  push:
+    paths:
+      - "scripts/list_mflow_v1_paths.py"
+      - ".github/workflows/list-mflow-v1-paths.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/list_mflow_v1_paths.py
