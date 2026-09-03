@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mflow-fleet-watchdog"
+version = "0.1.0"
+description = "Conservative M-Flow outstanding-payment watchdog for small fleets"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "playwright>=1.55,<2",
+  "requests>=2.32,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<10"]
+
+[project.scripts]
+mflow-watchdog = "mflow_watchdog.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mflow_watchdog*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
