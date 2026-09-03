@@ -5,7 +5,7 @@ title M-Flow LIVE Local Agent
 
 echo ==================================================
 echo  M-Flow LIVE Local Agent
-echo  Real checks run from THIS computer/network.
+echo  Current M-Flow API2 checker - no simulated result
 echo ==================================================
 echo.
 
@@ -26,24 +26,20 @@ if %errorlevel%==0 (
 )
 
 if not exist ".venv\Scripts\python.exe" (
-  echo [1/4] Creating local environment...
+  echo [1/3] Creating local environment...
   %PY% -m venv .venv
   if errorlevel 1 goto :fail
 )
 
 call ".venv\Scripts\activate.bat"
 
-echo [2/4] Installing/updating M-Flow agent...
+echo [2/3] Installing/updating M-Flow agent...
 python -m pip install --upgrade pip >nul
-pip install -e .
+python -m pip install -e .
 if errorlevel 1 goto :fail
 
-echo [3/4] Installing browser engine if needed...
-python -m playwright install chromium
-if errorlevel 1 goto :fail
-
-echo [4/4] Starting LIVE agent...
-set "MFLOW_URL=https://mflowthai.com/mflow/unuserpayment"
+echo [3/3] Starting LIVE API2 agent...
+set "MFLOW_URL=https://mflowthai.com/mflowspf/"
 set "MFLOW_HEADLESS=true"
 start "" "https://mflow-admin-demo.vercel.app"
 echo.
