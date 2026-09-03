@@ -55,7 +55,7 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         return cls(
-            mflow_url=os.getenv("MFLOW_URL", "https://mflowthai.com/mflow/unuserpayment"),
+            mflow_url=os.getenv("MFLOW_URL", "https://mflowthai.com/mflowspf/"),
             headless=_as_bool(os.getenv("MFLOW_HEADLESS"), True),
             timeout_seconds=int(os.getenv("MFLOW_TIMEOUT_SECONDS", "30")),
             safety_deadline_hours=int(os.getenv("MFLOW_SAFETY_DEADLINE_HOURS", "48")),
