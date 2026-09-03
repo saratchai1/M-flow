@@ -11,6 +11,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Important on macOS: leave Downloads/Desktop/Documents before launching
+# Python subprocesses, otherwise TCC privacy can make os.getcwd() fail.
+cd "$HOME"
+
 printf '\n==========================================\n'
 printf ' M-Flow LIVE Agent — Mac installer\n'
 printf '==========================================\n\n'
@@ -23,7 +27,7 @@ import sys
 raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
 PYTEST
     then
-      PY="$candidate"
+      PY="$(command -v "$candidate")"
       break
     fi
   fi
@@ -42,13 +46,17 @@ rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
 cp -R "$TMP_DIR/M-flow-main/." "$APP_DIR/"
 
+# From here on all Python/pip commands run from the private app folder,
+# not from Downloads, so macOS privacy restrictions do not affect cwd.
+cd "$APP_DIR"
+
 echo "[2/4] เตรียม Python environment..."
-"$PY" -m venv "$APP_DIR/.venv"
-"$APP_DIR/.venv/bin/python" -m pip install --upgrade pip >/dev/null
-"$APP_DIR/.venv/bin/pip" install -e "$APP_DIR" >/dev/null
+"$PY" -m venv .venv
+PIP_DISABLE_PIP_VERSION_CHECK=1 .venv/bin/python -m pip install --upgrade pip >/dev/null
+PIP_DISABLE_PIP_VERSION_CHECK=1 .venv/bin/python -m pip install -e . >/dev/null
 
 echo "[3/4] ติดตั้ง Chromium สำหรับตรวจ M-Flow..."
-"$APP_DIR/.venv/bin/python" -m playwright install chromium >/dev/null
+.venv/bin/python -m playwright install chromium >/dev/null
 
 echo "[4/4] เปิด LIVE Agent และหน้าเว็บ..."
 export MFLOW_URL="https://mflowthai.com/mflow/unuserpayment"
@@ -58,4 +66,4 @@ open "$WEB_URL" >/dev/null 2>&1 || true
 printf '\nพร้อมแล้ว — อย่าปิด Terminal หน้าต่างนี้ระหว่างใช้งาน\n'
 printf 'บนเว็บควรเปลี่ยนเป็น: LIVE AGENT ONLINE\n\n'
 
-exec "$APP_DIR/.venv/bin/python" -m mflow_watchdog.local_agent
+exec .venv/bin/python -m mflow_watchdog.local_agent
