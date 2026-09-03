@@ -22,5 +22,8 @@ mflow-watchdog = "mflow_watchdog.cli:main"
 [tool.setuptools.packages.find]
 include = ["mflow_watchdog*"]
 
+[tool.setuptools.package-data]
+mflow_watchdog = ["web/*.html", "web/*.css", "web/*.js"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
