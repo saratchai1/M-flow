@@ -12,16 +12,13 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 4
     steps:
-      - name: Download current public M-Flow SPA assets
+      - name: Download current public M-Flow SPA bundle
         run: |
           mkdir -p mflow-bundle
-          curl -LfsS https://mflowthai.com/mflowspf/main.dart.js -o mflow-bundle/main.dart.js
-          curl -LfsS https://mflowthai.com/mflowspf/index.html -o mflow-bundle/index.html || true
-          curl -LfsS https://mflowthai.com/mflowspf/flutter_bootstrap.js -o mflow-bundle/flutter_bootstrap.js || true
-          curl -LfsS https://mflowthai.com/mflowspf/flutter_service_worker.js -o mflow-bundle/flutter_service_worker.js || true
-          curl -LfsS https://mflowthai.com/mflowspf/assets/AssetManifest.bin.json -o mflow-bundle/AssetManifest.bin.json || true
+          curl --connect-timeout 15 --max-time 90 -LfsS https://mflowthai.com/mflowspf/main.dart.js -o mflow-bundle/main.dart.js
+          curl --connect-timeout 15 --max-time 30 -LfsS https://mflowthai.com/mflowspf/assets/AssetManifest.bin.json -o mflow-bundle/AssetManifest.bin.json || true
           wc -c mflow-bundle/*
       - uses: actions/upload-artifact@v4
         with:
