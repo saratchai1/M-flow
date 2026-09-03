@@ -11,8 +11,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Important on macOS: leave Downloads/Desktop/Documents before launching
-# Python subprocesses, otherwise TCC privacy can make os.getcwd() fail.
+# Leave Downloads/Desktop/Documents before launching Python so macOS TCC
+# cannot make the current directory inaccessible.
 cd "$HOME"
 
 printf '\n==========================================\n'
@@ -39,31 +39,26 @@ if [ -z "$PY" ]; then
   exit 1
 fi
 
-echo "[1/4] ดาวน์โหลด M-Flow Agent ล่าสุด..."
+echo "[1/3] ดาวน์โหลด M-Flow Agent ล่าสุด..."
 curl -LfsS "$ZIP_URL" -o "$TMP_DIR/mflow.zip"
 unzip -q "$TMP_DIR/mflow.zip" -d "$TMP_DIR"
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
 cp -R "$TMP_DIR/M-flow-main/." "$APP_DIR/"
-
-# From here on all Python/pip commands run from the private app folder,
-# not from Downloads, so macOS privacy restrictions do not affect cwd.
 cd "$APP_DIR"
 
-echo "[2/4] เตรียม Python environment..."
+echo "[2/3] ติดตั้งตัวตรวจ M-Flow API รุ่นปัจจุบัน..."
 "$PY" -m venv .venv
 PIP_DISABLE_PIP_VERSION_CHECK=1 .venv/bin/python -m pip install --upgrade pip >/dev/null
 PIP_DISABLE_PIP_VERSION_CHECK=1 .venv/bin/python -m pip install -e . >/dev/null
 
-echo "[3/4] ติดตั้ง Chromium สำหรับตรวจ M-Flow..."
-.venv/bin/python -m playwright install chromium >/dev/null
-
-echo "[4/4] เปิด LIVE Agent และหน้าเว็บ..."
-export MFLOW_URL="https://mflowthai.com/mflow/unuserpayment"
+echo "[3/3] เปิด LIVE Agent และหน้าเว็บ..."
+export MFLOW_URL="https://mflowthai.com/mflowspf/"
 export MFLOW_HEADLESS="true"
 open "$WEB_URL" >/dev/null 2>&1 || true
 
 printf '\nพร้อมแล้ว — อย่าปิด Terminal หน้าต่างนี้ระหว่างใช้งาน\n'
-printf 'บนเว็บควรเปลี่ยนเป็น: LIVE AGENT ONLINE\n\n'
+printf 'Engine: M-Flow API2 (ไม่มีการสุ่มผล)\n'
+printf 'บนเว็บควรขึ้น: LIVE AGENT ONLINE\n\n'
 
 exec .venv/bin/python -m mflow_watchdog.local_agent
