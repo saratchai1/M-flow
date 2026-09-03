@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from typing import Protocol
 from zoneinfo import ZoneInfo
 
-from .checker import MFlowBrowserChecker
 from .config import Settings, Vehicle
 from .db import Store
-from .models import CheckStatus, OutstandingItem
+from .models import CheckResult, CheckStatus, OutstandingItem
 from .notifier import MultiNotifier
 
 UTC = timezone.utc
 BANGKOK = ZoneInfo("Asia/Bangkok")
+
+
+class VehicleChecker(Protocol):
+    def check(self, vehicle: Vehicle) -> CheckResult: ...
 
 
 def _as_aware(dt: datetime | None) -> datetime | None:
@@ -22,6 +26,9 @@ def _as_aware(dt: datetime | None) -> datetime | None:
 
 
 def _internal_deadline(item: OutstandingItem, now: datetime, hours: int) -> datetime:
+    official_due = _as_aware(item.due_date)
+    if official_due is not None:
+        return official_due
     return (_as_aware(item.transaction_date) or now) + timedelta(hours=hours)
 
 
@@ -33,39 +40,75 @@ def _fmt_date(dt: datetime | None) -> str:
     return "ไม่ทราบวันที่" if dt is None else dt.strftime("%d/%m/%Y")
 
 
-def _tx_notification(vehicle: Vehicle, row, now: datetime, urgent_before_hours: int, renotify_hours: int):
-    last_notified = datetime.fromisoformat(row["last_notified_at"]) if row["last_notified_at"] else None
+def _tx_notification(
+    vehicle: Vehicle,
+    row,
+    now: datetime,
+    urgent_before_hours: int,
+    renotify_hours: int,
+):
+    last_notified = (
+        datetime.fromisoformat(row["last_notified_at"])
+        if row["last_notified_at"]
+        else None
+    )
     deadline = datetime.fromisoformat(row["deadline"]) if row["deadline"] else None
     hours_left = (deadline - now).total_seconds() / 3600 if deadline else 999999
     if hours_left <= 0:
-        level, headline = "OVERDUE_INTERNAL", "🔴 M-Flow: เกิน safety deadline ภายในแล้ว"
-        should_send = not last_notified or (now - last_notified).total_seconds() >= renotify_hours * 3600
+        level, headline = "OVERDUE_INTERNAL", "🔴 M-Flow: เกินกำหนดติดตามในระบบแล้ว"
+        should_send = (
+            not last_notified
+            or (now - last_notified).total_seconds() >= renotify_hours * 3600
+        )
     elif hours_left <= urgent_before_hours:
         level, headline = "URGENT", "🔴 M-Flow: ต้องตรวจและชำระด่วน"
         should_send = row["notification_level"] != "URGENT" or not last_notified
     elif not last_notified:
-        level, headline, should_send = "NEW", "🚗 M-Flow: พบรายการที่ต้องตรวจสอบ/ชำระ", True
+        level, headline, should_send = (
+            "NEW",
+            "🚗 M-Flow: พบรายการที่ต้องตรวจสอบ/ชำระ",
+            True,
+        )
     else:
         level, headline = "REMINDER", "⚠️ M-Flow: รายการยังค้างอยู่"
-        should_send = (now - last_notified).total_seconds() >= renotify_hours * 3600
+        should_send = (
+            now - last_notified
+        ).total_seconds() >= renotify_hours * 3600
     if not should_send:
         return None, None
-    tx_date = datetime.fromisoformat(row["transaction_date"]) if row["transaction_date"] else None
+    tx_date = (
+        datetime.fromisoformat(row["transaction_date"])
+        if row["transaction_date"]
+        else None
+    )
     text = (
         f"{headline}\nทะเบียน: {vehicle.plate_number} {vehicle.province}\n"
         f"วันที่รายการ: {_fmt_date(tx_date)}\nยอด: {_fmt_amount(row['amount'])}\n"
-        f"Safety deadline ภายใน: {deadline.astimezone(BANGKOK).strftime('%d/%m/%Y %H:%M น.') if deadline else '-'}\n"
-        "หมายเหตุ: safety deadline เป็นเกณฑ์ภายใน ไม่ใช่การยืนยันกำหนดชำระตามเงื่อนไข M-Flow\n"
+        f"กำหนดติดตาม: {deadline.astimezone(BANGKOK).strftime('%d/%m/%Y %H:%M น.') if deadline else '-'}\n"
+        "หมายเหตุ: ใช้วันครบกำหนดจาก M-Flow เมื่อระบบส่งมา มิฉะนั้นใช้ safety deadline ภายใน\n"
         f"ตรวจสอบ/ชำระ: {row['source_url']}"
     )
     return level, text
 
 
 class WatchdogService:
-    def __init__(self, settings: Settings, store: Store, checker: MFlowBrowserChecker, notifier: MultiNotifier):
-        self.settings, self.store, self.checker, self.notifier = settings, store, checker, notifier
+    def __init__(
+        self,
+        settings: Settings,
+        store: Store,
+        checker: VehicleChecker,
+        notifier: MultiNotifier,
+    ):
+        self.settings, self.store, self.checker, self.notifier = (
+            settings,
+            store,
+            checker,
+            notifier,
+        )
 
-    def check_vehicle(self, vehicle: Vehicle, now: datetime | None = None) -> CheckStatus:
+    def check_vehicle(
+        self, vehicle: Vehicle, now: datetime | None = None
+    ) -> CheckStatus:
         now = now or datetime.now(tz=UTC)
         result = self.checker.check(vehicle)
         self.store.record_check(vehicle, result, now)
@@ -74,7 +117,9 @@ class WatchdogService:
             return result.status
         if result.status in {CheckStatus.CHECK_FAILED, CheckStatus.REVIEW_REQUIRED}:
             key = f"checker:{vehicle.plate_number}:{vehicle.province}:{result.status.value}"
-            if self.store.can_send_alert(key, now, self.settings.failure_renotify_hours):
+            if self.store.can_send_alert(
+                key, now, self.settings.failure_renotify_hours
+            ):
                 msg = (
                     f"⚠️ M-Flow Watchdog: {result.status.value}\nทะเบียน: {vehicle.plate_number} {vehicle.province}\n"
                     f"รายละเอียด: {result.detail}\nระบบจะไม่ตีความว่า 'ไม่มียอด' เมื่อเช็กไม่สำเร็จ\n"
@@ -85,9 +130,17 @@ class WatchdogService:
                     self.store.mark_alert_sent(key, now)
             return result.status
         for item in result.items:
-            deadline = _internal_deadline(item, now, self.settings.safety_deadline_hours)
+            deadline = _internal_deadline(
+                item, now, self.settings.safety_deadline_hours
+            )
             row = self.store.upsert_transaction(vehicle, item, now, deadline)
-            level, message = _tx_notification(vehicle, row, now, self.settings.urgent_before_hours, self.settings.renotify_after_hours)
+            level, message = _tx_notification(
+                vehicle,
+                row,
+                now,
+                self.settings.urgent_before_hours,
+                self.settings.renotify_after_hours,
+            )
             if message:
                 errors = self.notifier.send(message)
                 if not errors:
