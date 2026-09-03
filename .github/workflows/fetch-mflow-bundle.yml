@@ -1,0 +1,30 @@
+name: Fetch M-Flow bundle
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/fetch-mflow-bundle.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download current public M-Flow SPA assets
+        run: |
+          mkdir -p mflow-bundle
+          curl -LfsS https://mflowthai.com/mflowspf/main.dart.js -o mflow-bundle/main.dart.js
+          curl -LfsS https://mflowthai.com/mflowspf/index.html -o mflow-bundle/index.html || true
+          curl -LfsS https://mflowthai.com/mflowspf/flutter_bootstrap.js -o mflow-bundle/flutter_bootstrap.js || true
+          curl -LfsS https://mflowthai.com/mflowspf/flutter_service_worker.js -o mflow-bundle/flutter_service_worker.js || true
+          curl -LfsS https://mflowthai.com/mflowspf/assets/AssetManifest.bin.json -o mflow-bundle/AssetManifest.bin.json || true
+          wc -c mflow-bundle/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mflow-bundle-${{ github.run_id }}
+          path: mflow-bundle/
+          retention-days: 3
