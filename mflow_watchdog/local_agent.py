@@ -5,13 +5,14 @@ import threading
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .checker import MFlowBrowserChecker
+from .api_checker import MFlowApiChecker
 from .config import Settings, Vehicle
 from .models import CheckStatus
 
 UTC = timezone.utc
 HOST = "127.0.0.1"
 PORT = 8765
+AGENT_VERSION = "0.3"
 ALLOWED_ORIGINS = {
     "https://mflow-admin-demo.vercel.app",
     "https://mflow-admin-demo-saratchais-projects-fe70d048.vercel.app",
@@ -21,7 +22,15 @@ ALLOWED_ORIGINS = {
 CHECK_LOCK = threading.Lock()
 
 
-def _iso_date(dt):
+def _as_aware(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value
+
+
+def _iso_date(dt: datetime | None) -> str | None:
     return dt.isoformat() if dt else None
 
 
@@ -29,16 +38,16 @@ def _serialize_result(vehicle: Vehicle, result, settings: Settings) -> dict:
     now = datetime.now(tz=UTC)
     items = []
     for item in result.items:
-        tx = item.transaction_date
-        if tx is not None and tx.tzinfo is None:
-            tx = tx.replace(tzinfo=UTC)
-        deadline = (tx or now) + timedelta(hours=settings.safety_deadline_hours)
+        tx = _as_aware(item.transaction_date)
+        official_due = _as_aware(item.due_date)
+        deadline = official_due or ((tx or now) + timedelta(hours=settings.safety_deadline_hours))
         items.append(
             {
-                "transaction_date": _iso_date(item.transaction_date),
+                "transaction_date": _iso_date(tx),
                 "amount": item.amount,
                 "source_url": item.source_url,
                 "internal_deadline": deadline.isoformat(),
+                "official_due_date": _iso_date(official_due),
             }
         )
     return {
@@ -51,11 +60,12 @@ def _serialize_result(vehicle: Vehicle, result, settings: Settings) -> dict:
         "items": items,
         "checked_at": now.isoformat(),
         "is_live": True,
+        "engine": "MFLOW_API2",
     }
 
 
 class AgentHandler(BaseHTTPRequestHandler):
-    server_version = "MFlowLocalAgent/0.2"
+    server_version = f"MFlowLocalAgent/{AGENT_VERSION}"
 
     def _origin_allowed(self) -> bool:
         origin = self.headers.get("Origin")
@@ -100,9 +110,10 @@ class AgentHandler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
                     "mode": "LIVE_LOCAL_AGENT",
+                    "engine": "MFLOW_API2",
                     "mflow_url": settings.mflow_url,
                     "headless": settings.headless,
-                    "version": "0.2",
+                    "version": AGENT_VERSION,
                 },
             )
             return
@@ -143,18 +154,24 @@ class AgentHandler(BaseHTTPRequestHandler):
 
         try:
             settings = Settings.from_env()
-            checker = MFlowBrowserChecker(settings)
+            checker = MFlowApiChecker(settings)
             results = []
             for vehicle in vehicles:
                 result = checker.check(vehicle)
                 results.append(_serialize_result(vehicle, result, settings))
-            failed = sum(1 for row in results if row["status"] in {CheckStatus.CHECK_FAILED.value, CheckStatus.REVIEW_REQUIRED.value})
+            failed = sum(
+                1
+                for row in results
+                if row["status"]
+                in {CheckStatus.CHECK_FAILED.value, CheckStatus.REVIEW_REQUIRED.value}
+            )
             self._json(
                 200,
                 {
                     "ok": True,
                     "is_live": True,
-                    "source": "M-Flow via local browser agent",
+                    "engine": "MFLOW_API2",
+                    "source": "M-Flow current nonmember API via local agent",
                     "results": results,
                     "failed": failed,
                 },
@@ -168,6 +185,7 @@ class AgentHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     print("M-Flow LIVE Local Agent")
+    print("Engine: current M-Flow API2 nonmember lookup")
     print(f"Listening only on http://{HOST}:{PORT}")
     print("Allowed web app: https://mflow-admin-demo.vercel.app")
     print("Press Ctrl+C to stop.")
