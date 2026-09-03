@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 import random
-import re
-import sys
 from datetime import datetime
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -126,7 +124,7 @@ def find_province_code(payload, names=("กรุงเทพมหานคร"
 
 def main() -> int:
     env = parse_env(fetch_text(ENV_URL))
-    required = ("API_KEY", "AUTH_SERVICE_BASE_URL", "MASTER_SERVICE_BASE_URL", "BILLING_SERVICE_BASE_URL")
+    required = ("API_KEY", "CUSTOMER_SERVICE_BASE_URL", "MASTER_SERVICE_BASE_URL", "BILLING_SERVICE_BASE_URL")
     missing = [key for key in required if not env.get(key)]
     if missing:
         print("MISSING_ENV", missing)
@@ -138,11 +136,13 @@ def main() -> int:
         "Authorization": "Basic [GUEST]",
         "LoginType": "GUEST",
         "AccountType": "CUSTOMER",
-        "X-Device-Id": DEVICE_ID[:20],
+        "X-Device-Id": DEVICE_ID,
         "X-Device-Name": DEVICE_NAME,
     }
-    auth_url = env["AUTH_SERVICE_BASE_URL"].rstrip("/") + "/v1/auth/sign-in/app"
-    status, response_headers, auth = request_json("POST", auth_url, auth_headers)
+    # The current Flutter client constructs its auth client with
+    # CUSTOMER_SERVICE_BASE_URL, not AUTH_SERVICE_BASE_URL.
+    auth_url = env["CUSTOMER_SERVICE_BASE_URL"].rstrip("/") + "/v1/auth/sign-in/app"
+    status, _, auth = request_json("POST", auth_url, auth_headers)
     print("AUTH_STATUS", status)
     print("AUTH_RESPONSE", json.dumps(redact(auth), ensure_ascii=False)[:4000])
     access_token = find_token(auth)
@@ -152,16 +152,14 @@ def main() -> int:
 
     bearer_headers = {**common_headers(env["API_KEY"]), "Authorization": "Bearer " + access_token}
     master_url = env["MASTER_SERVICE_BASE_URL"].rstrip("/") + "/v1/masterDropdown/dropdownProvince"
-    province_payload = None
     province_code = None
     for special in ("N", "false", "0", ""):
-        url = master_url + ("?" + urlencode({"specialRegionFlag": special}) if special != "" else "")
+        url = master_url + ("?" + urlencode({"specialRegionFlag": special}) if special else "")
         status, _, payload = request_json("GET", url, {**bearer_headers, "Language": "TH"})
         print("PROVINCE_STATUS", special or "<omitted>", status)
         print("PROVINCE_RESPONSE_HEAD", json.dumps(redact(payload), ensure_ascii=False)[:2500])
         code = find_province_code(payload)
         if status < 400 and code:
-            province_payload = payload
             province_code = code
             break
 
