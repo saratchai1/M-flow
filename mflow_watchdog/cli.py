@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 
-from .checker import MFlowBrowserChecker
+from .api_checker import MFlowApiChecker
 from .config import Settings
 from .dashboard import serve
 from .db import Store
@@ -51,9 +51,12 @@ def main(argv: list[str] | None = None) -> int:
         if mock_mode:
             checker = MockMFlowChecker(mock_mode)
             notifier = MultiNotifier([ConsoleNotifier()])
-            logging.info("Running in MFLOW_MOCK_MODE=%s; no M-Flow or notification API calls will be made", mock_mode)
+            logging.info(
+                "Running in MFLOW_MOCK_MODE=%s; no M-Flow or notification API calls will be made",
+                mock_mode,
+            )
         else:
-            checker = MFlowBrowserChecker(settings)
+            checker = MFlowApiChecker(settings)
             notifier = build_notifier(settings)
 
         counts = WatchdogService(settings, store, checker, notifier).run()
