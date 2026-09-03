@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - "mflow_watchdog/api_checker.py"
+      - "mflow_watchdog/config.py"
+      - "mflow_watchdog/models.py"
       - "scripts/probe_api2.py"
       - ".github/workflows/probe-api2.yml"
 
@@ -19,5 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Probe public guest flow without a real vehicle
+      - name: Install current checker
+        run: pip install -e .
+      - name: Validate current nonmember API with a safe empty test plate
         run: python scripts/probe_api2.py
