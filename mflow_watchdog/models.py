@@ -18,6 +18,7 @@ class OutstandingItem:
     amount: float | None
     source_url: str
     raw_excerpt: str = ""
+    due_date: datetime | None = None
 
 
 @dataclass(frozen=True)
