@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 from urllib.parse import urlparse
 
-TARGET = "https://mflowthai.com/mflow/checkunbilled"
+TARGET = "https://mflowthai.com/mflow/unuserpayment"
 
 
 def safe_url(url: str) -> str:
@@ -26,7 +26,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(2500)
     print("TITLE", page.title())
     print("FINAL_URL", safe_url(page.url))
-    print("BODY_HEAD", " | ".join(page.locator("body").inner_text().splitlines()[:35]))
+    print("BODY_HEAD", " | ".join(page.locator("body").inner_text().splitlines()[:45]))
 
     print("INPUTS")
     for i in range(page.locator("input").count()):
@@ -54,6 +54,6 @@ with sync_playwright() as p:
     for i in range(page.locator("script[src]").count()):
         src = page.locator("script[src]").nth(i).get_attribute("src")
         if src:
-            print(safe_url(page.url if src.startswith("/") else src))
+            print(src)
 
     browser.close()
